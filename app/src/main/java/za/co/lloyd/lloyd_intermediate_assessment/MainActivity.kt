@@ -19,6 +19,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import za.co.lloyd.lloyd_intermediate_assessment.screens.DeviceViewModel
 import za.co.lloyd.lloyd_intermediate_assessment.utils.networkConnection.ConnectivityManager
 import za.co.lloyd.lloyd_intermediate_assessment.utils.theme.LloydintermediateassessmentTheme
+import za.co.lloyd.lloyd_intermediate_assessment.widgets.navigation.ToDoAppNavWidget
 import javax.inject.Inject
 import kotlin.system.exitProcess
 
@@ -31,14 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            LloydintermediateassessmentTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            ToDoApplication()
         }
         connectivityManager.registerConnectionObserver(this)
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
@@ -81,17 +75,8 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
+fun ToDoApplication() {
     LloydintermediateassessmentTheme {
-        Greeting("Android")
+        ToDoAppNavWidget()
     }
 }
