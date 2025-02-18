@@ -5,20 +5,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import dagger.hilt.android.AndroidEntryPoint
 import za.co.lloyd.lloyd_intermediate_assessment.screens.DeviceViewModel
 import za.co.lloyd.lloyd_intermediate_assessment.utils.networkConnection.ConnectivityManager
-import za.co.lloyd.lloyd_intermediate_assessment.utils.theme.LloydintermediateassessmentTheme
+import za.co.lloyd.lloyd_intermediate_assessment.utils.theme.LloydIntermediateAssessmentTheme
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.navigation.ToDoAppNavWidget
 import javax.inject.Inject
 import kotlin.system.exitProcess
@@ -76,7 +70,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ToDoApplication() {
-    LloydintermediateassessmentTheme {
+    LloydIntermediateAssessmentTheme {
         ToDoAppNavWidget()
     }
 }

@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import za.co.lloyd.lloyd_intermediate_assessment.screens.completed.CompletedScreen
 import za.co.lloyd.lloyd_intermediate_assessment.screens.home.HomeScreen
 
 @Composable
@@ -14,7 +15,7 @@ fun ToDoAppNavWidget() {
             HomeScreen(navController = navController)
         }
         composable(ToDoAppNavScreens.CompletedScreen.name) {
-//            SearchScreen(navController = navController)
+            CompletedScreen(navController = navController)
         }
     }
 }
