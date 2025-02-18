@@ -1,0 +1,111 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+    id("kotlin-parcelize")
+}
+
+android {
+    namespace = "za.co.lloyd.lloyd_intermediate_assessment"
+    compileSdk = defaultCompileSdkVersion
+
+    defaultConfig {
+        applicationId = "za.co.lloyd.lloyd_intermediate_assessment"
+        minSdk defaultMinSdkVersion
+        targetSdk defaultTargetSdkVersion
+        versionCode 20240607
+        versionName "1.0"
+
+        testInstrumentationRunner "com.clean.app.PostAppTestRunner"
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+        testOptions {
+            execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        }
+        vectorDrawables {
+            useSupportLibrary true
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+        }
+    }
+    compileOptions {
+        sourceCompatibility javaCompileVersion
+        targetCompatibility javaCompileVersion
+    }
+    kotlinOptions {
+        jvmTarget = jvmTarget
+    }
+    buildFeatures {
+        compose true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion versions.compose
+    }
+    packagingOptions {
+        resources {
+            excludes += '/META-INF/{AL2.0,LGPL2.1}'
+        }
+    }
+}
+
+dependencies {
+    // Android X libraries
+    implementation androidx.core
+    implementation material.material
+    implementation androidx.hiltWork
+    implementation material.material3
+    implementation androidx.appCompat
+    implementation androidx.composeUi
+    implementation androidx.workRuntimeKtx
+    implementation androidx.composeMaterial
+    implementation androidx.fragmentKtx
+    implementation androidx.activityKtx
+    implementation androidx.composeActivity
+    implementation androidx.navigationCompose
+    implementation androidx.composeMaterialIcons
+    implementation androidx.hiltNavigationCompose
+    implementation androidx.composeUiToolingPreview
+
+    // Local storage (persistence libraries)
+    implementation persistence.datastore
+    implementation persistence.roomRuntime
+    implementation persistence.roomKtx
+    implementation persistence.roomCommon
+    kapt persistence.roomCompiler
+
+    // Data injection and testing libraries
+    kapt di.hiltCompiler
+    implementation di.hiltAndroid
+    testImplementation test.junit
+    kaptAndroidTest androidTest.hiltCompiler
+    androidTestImplementation androidTest.hilt
+    androidTestImplementation androidTest.core
+    implementation coroutines.coroutinesAndroid
+    androidTestImplementation androidTest.rules
+    androidTestImplementation androidTest.junit
+    androidTestImplementation androidTest.runner
+    debugImplementation androidTest.composeManifest
+    androidTestImplementation androidTest.espressoCore
+    androidTestImplementation androidTest.idlingResource
+    androidTestImplementation androidTest.composeUiTestJunit
+
+    // GMS services
+    implementation googleMaps.GMSplayServicesMaps
+    implementation googleMaps.GMSplayServicesLocation
+
+    // Network libraries
+    implementation network.moshi
+    implementation network.okHttp
+    implementation network.retrofit
+    implementation network.moshiKotlin
+    implementation network.retrofitMoshi
+    implementation network.retroConvertor
+    implementation network.okHttpInterceptor
+}
