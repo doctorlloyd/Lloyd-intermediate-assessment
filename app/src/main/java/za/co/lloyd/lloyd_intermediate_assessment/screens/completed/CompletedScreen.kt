@@ -66,9 +66,12 @@ fun CompletedScreen(navController: NavController) {
         }){ padding ->
         Box(modifier = Modifier.fillMaxSize().padding(0.dp).background(color = MaterialTheme.colors.background)){
             Column(modifier = Modifier.fillMaxSize()){
-                CustomSearchViewRight(placeholder = "Search for your task", search = searchText, modifier = Modifier.fillMaxWidth().background(color = Color.Transparent).padding(start = 16.dp, end = 16.dp, top = 8.dp), onValueChange = { text -> searchText = text }, weather = {
-                    // Update local weather list
-                    scope.launch { if (it.main?.temp!! > 0) taskList = completedScreenViewModel.getListOfTasks(status = 1) as ArrayList }
+                CustomSearchViewRight(placeholder = "Search for your task", search = searchText, modifier = Modifier.fillMaxWidth().background(color = Color.Transparent).padding(start = 16.dp, end = 16.dp, top = 8.dp), onValueChange = { text -> searchText = text }, task = {
+                    scope.launch {
+                        if(it.isNullOrEmpty()) {
+                            taskList = it!!
+                        }
+                    }
                 })
                 Spacer(modifier = Modifier.height(26.dp))
                 TaskList(

@@ -21,6 +21,9 @@ class TaskRepository@Inject constructor(private val taskDao: TaskDao) {
     suspend fun getListOfTasks(status: Int): List<Task>? = coroutineScope.async{
         return@async taskDao.getListOfTasks(status = status)
     }.await()
+    suspend fun searchTasks(query: String): List<Task>? = coroutineScope.async{
+        return@async taskDao.searchTasks(query = query)
+    }.await()
 
     suspend fun deleteAllTasks(): Int = coroutineScope.async{
         return@async taskDao.deleteAllTasks()

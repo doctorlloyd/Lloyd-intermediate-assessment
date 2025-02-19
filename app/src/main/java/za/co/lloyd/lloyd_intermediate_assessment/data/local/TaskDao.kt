@@ -14,6 +14,9 @@ interface  TaskDao{
     @Query("SELECT * FROM task_tbl WHERE taskStatus = :status ORDER BY dt_txt DESC")
     fun getListOfTasks(status: Int): List<Task>? // 0 = pending, 1 = completed
 
+    @Query("SELECT * FROM task_tbl WHERE title LIKE '%' || :query || '%' ORDER BY dt_txt DESC")
+    fun searchTasks(query: String): List<Task>?
+
     @Query("DELETE FROM task_tbl")
     fun deleteAllTasks(): Int
 

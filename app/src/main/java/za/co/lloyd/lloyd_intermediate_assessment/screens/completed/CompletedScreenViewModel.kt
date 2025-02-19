@@ -18,6 +18,12 @@ class CompletedScreenViewModel@Inject constructor(private val repository: TaskRe
         }
         return deferred.await()
     }
+    suspend fun searchTasks(query: String): List<Task>? {
+        val deferred: Deferred<List<Task>?> = viewModelScope.async {
+            repository.searchTasks(query = query)
+        }
+        return deferred.await()
+    }
 
     suspend fun deleteTask(id: Int): Int {
         val deferred: Deferred<Int> = viewModelScope.async {
