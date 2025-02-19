@@ -14,6 +14,9 @@ class TaskRepository@Inject constructor(private val taskDao: TaskDao) {
     suspend fun insertTask(task: Task): Long = coroutineScope.async{
         return@async taskDao.insertTask(task = task)
     }.await()
+    suspend fun updateTask(id: Int, taskStatus: Boolean, title: String, description: String): Int = coroutineScope.async{
+        return@async taskDao.updateTask(id = id, taskStatus = taskStatus, title = title, description= description)
+    }.await()
 
     suspend fun getListOfTasks(status: Int): List<Task>? = coroutineScope.async{
         return@async taskDao.getListOfTasks(status = status)
@@ -21,5 +24,8 @@ class TaskRepository@Inject constructor(private val taskDao: TaskDao) {
 
     suspend fun deleteAllTasks(): Int = coroutineScope.async{
         return@async taskDao.deleteAllTasks()
+    }.await()
+    suspend fun deleteTask(id: Int): Int = coroutineScope.async{
+        return@async taskDao.deleteTask(id = id)
     }.await()
 }

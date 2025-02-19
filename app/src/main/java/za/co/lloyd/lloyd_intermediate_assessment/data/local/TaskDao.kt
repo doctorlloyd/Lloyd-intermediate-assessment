@@ -17,8 +17,8 @@ interface  TaskDao{
     @Query("DELETE FROM task_tbl")
     fun deleteAllTasks(): Int
 
-    @Query("UPDATE task_tbl SET taskStatus = :taskStatus WHERE recordId = :id")
-    fun updateTask(taskStatus: Boolean, id: Int): Int
+    @Query("UPDATE task_tbl SET taskStatus = :taskStatus, title = :title, description = :description WHERE recordId = :id")
+    fun updateTask(id: Int, taskStatus: Boolean, title: String, description: String): Int
 
     @Query("DELETE FROM task_tbl WHERE recordId = :id")
     fun deleteTask(id: Int): Int

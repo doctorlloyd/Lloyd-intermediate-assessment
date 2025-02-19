@@ -9,6 +9,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -48,7 +50,9 @@ import za.co.lloyd.lloyd_intermediate_assessment.utils.theme.Rainy
 import za.co.lloyd.lloyd_intermediate_assessment.utils.theme.Sunny
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.ConnectivityViewModel
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.add_task.AddTaskDialog
+import za.co.lloyd.lloyd_intermediate_assessment.widgets.edit_task.EditTaskDialog
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.navigation.ToDoAppNavScreens
+import za.co.lloyd.lloyd_intermediate_assessment.widgets.task_list.TaskList
 
 @SuppressLint("SuspiciousIndentation", "CoroutineCreationDuringComposition")
 @Composable
@@ -67,12 +71,7 @@ fun HomeScreen(navController: NavController) {
     val progressBar = remember { mutableStateOf(false) }
     val weather = remember { mutableStateOf(Weather())}
 
-    val completedScreenViewModel = hiltViewModel<CompletedScreenViewModel>()
-    var taskList by remember{ mutableStateOf(ArrayList<Task>()) }
-
-    scope.launch { taskList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList }
-
-    if(!weather.value.name.isNullOrEmpty()) WeatherWidget(navController = navController, weather = weather, taskList = taskList)
+    if(!weather.value.name.isNullOrEmpty()) WeatherWidget(navController = navController, weather = weather)
     else scope.launch {
         if(connectivityViewModel.appConnectivityStatus() && deviceViewModel.currentLocation?.latitude != null){
             withContext(Dispatchers.IO) {
@@ -96,14 +95,20 @@ fun HomeScreen(navController: NavController) {
 }
 
 @Composable
-fun WeatherWidget(navController: NavController, weather: MutableState<Weather>, taskList: ArrayList<Task>){
+fun WeatherWidget(navController: NavController, weather: MutableState<Weather>){
     // Used for side effects on submit button
     val viewModelJob = Job()
     val scope = CoroutineScope(Dispatchers.Main + viewModelJob)
 
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
     var showDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedTask by remember { mutableStateOf<Task?>(null) }
     val completedScreenViewModel = hiltViewModel<CompletedScreenViewModel>()
+
+    var taskList by remember{ mutableStateOf(ArrayList<Task>()) }
+    scope.launch { taskList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList }
 
         Scaffold(
             bottomBar = {
@@ -170,26 +175,70 @@ fun WeatherWidget(navController: NavController, weather: MutableState<Weather>, 
                     if(backgroundColorChanger(weather.value.weather?.get(0)?.icon!!).contains(stringResource(id = R.string.clear), ignoreCase = true)) Sunny
                     else if(backgroundColorChanger(weather.value.weather?.get(0)?.icon!!).contains(stringResource(id = R.string.rainy), ignoreCase = true)) Rainy
                     else Cloudy).padding(top = 14.dp, bottom = 60.dp)){
-                        if(taskList.isNotEmpty())LazyColumn(modifier = Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            items(taskList.size) { i ->
-                                Row(modifier = Modifier.fillMaxWidth().padding(end = 14.dp, start = 14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceEvenly){
-                                    Text(modifier = Modifier.weight(1f), text = taskList[i].title, style = TextStyle(textAlign = TextAlign.Start, fontSize = 18.sp, color = Color.White))
-//                                    Image(modifier = Modifier.weight(1f), painter = painterResource(id = getWeatherIcon(weatherList[i].weather!![0].icon!!)), contentDescription = null)
-//                                    Text(modifier = Modifier.weight(1f).padding(end = 12.dp), text = "${"%.0f".format(convertTemperature(weatherList[i].main?.temp!!))} \u00B0C", style = TextStyle(textAlign = TextAlign.End, fontSize = 18.sp, color = Color.White))
-                                }
+                        TaskList(
+                            home = true,
+                            taskList,
+                            onEditTask = { task ->
+                                selectedTask = task
+                                showEditDialog = true
+                            },
+                            onDeleteTask = { task ->
+                                selectedTask = task
+                                showDeleteDialog = true
                             }
-                        }
-                        else Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                            Text(text = "No tasks available", style = TextStyle(fontSize = 18.sp, color = Color.White, textAlign = TextAlign.Center))
-                        }
+                        )
                     }
                 }
             }
+            // Add Task Dialog
             if (showDialog) {
                 AddTaskDialog(
                     onDismiss = { showDialog = false },
                     onTaskAdded = { task ->
-                        scope.launch { completedScreenViewModel.insertTask(task) }
+                        scope.launch { completedScreenViewModel.insertTask(task)
+                            taskList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList
+                        }
+                    }
+                )
+            }
+
+            // Edit Task Dialog
+            if (showEditDialog && selectedTask != null) {
+                EditTaskDialog(
+                    task = selectedTask!!,
+                    onDismiss = { showEditDialog = false },
+                    onTaskUpdated = { updatedTask ->
+                        scope.launch {
+                            completedScreenViewModel.updateTask(updatedTask)
+                            taskList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList
+                        }
+                    }
+                )
+            }
+
+            // Delete Confirmation Dialog
+            if (showDeleteDialog && selectedTask != null) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Delete Task") },
+                    text = { Text("Are you sure you want to delete this task?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    completedScreenViewModel.deleteTask(selectedTask!!.recordId)
+                                    taskList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList
+                                }
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text("Delete")
+                        }
+                    },
+                    dismissButton = {
+                        OutlinedButton(onClick = { showDeleteDialog = false }) {
+                            Text("Cancel")
+                        }
                     }
                 )
             }

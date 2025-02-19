@@ -19,9 +19,9 @@ class CompletedScreenViewModel@Inject constructor(private val repository: TaskRe
         return deferred.await()
     }
 
-    suspend fun deleteAllTasks(): Int {
+    suspend fun deleteTask(id: Int): Int {
         val deferred: Deferred<Int> = viewModelScope.async {
-            repository.deleteAllTasks()
+            repository.deleteTask(id = id)
         }
         return deferred.await()
     }
@@ -29,6 +29,13 @@ class CompletedScreenViewModel@Inject constructor(private val repository: TaskRe
     suspend fun insertTask(task: Task): Long {
         val deferred: Deferred<Long> = viewModelScope.async {
             repository.insertTask(task = task)
+        }
+        return deferred.await()
+    }
+
+    suspend fun updateTask(updatedTask: Task): Int {
+        val deferred: Deferred<Int> = viewModelScope.async {
+            repository.updateTask(id = updatedTask.recordId, taskStatus = updatedTask.taskStatus!!, title = updatedTask.title, description = updatedTask.description)
         }
         return deferred.await()
     }

@@ -24,8 +24,10 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.*
 import za.co.lloyd.lloyd_intermediate_assessment.models.local.Task
 import za.co.lloyd.lloyd_intermediate_assessment.utils.Constants.navScreens
+import za.co.lloyd.lloyd_intermediate_assessment.widgets.edit_task.EditTaskDialog
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.navigation.ToDoAppNavScreens
 import za.co.lloyd.lloyd_intermediate_assessment.widgets.search.CustomSearchViewRight
+import za.co.lloyd.lloyd_intermediate_assessment.widgets.task_list.TaskList
 
 @SuppressLint("CoroutineCreationDuringComposition")
 @Composable
@@ -36,11 +38,13 @@ fun CompletedScreen(navController: NavController) {
 
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(1) }
     var searchText by remember { mutableStateOf("") }
-
+    var showEditDialog by remember { mutableStateOf(false) }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedTask by remember { mutableStateOf<Task?>(null) }
     val completedScreenViewModel = hiltViewModel<CompletedScreenViewModel>()
-    var localWeatherList by remember{ mutableStateOf(ArrayList<Task>()) }
 
-    scope.launch { localWeatherList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList }
+    var taskList by remember{ mutableStateOf(ArrayList<Task>()) }
+    scope.launch { taskList = completedScreenViewModel.getListOfTasks(status = 1) as ArrayList }
 
     Scaffold(
         bottomBar = {
@@ -62,25 +66,65 @@ fun CompletedScreen(navController: NavController) {
         }){ padding ->
         Box(modifier = Modifier.fillMaxSize().padding(0.dp).background(color = MaterialTheme.colors.background)){
             Column(modifier = Modifier.fillMaxSize()){
-                CustomSearchViewRight(placeholder = "Search your favourite city.", search = searchText, modifier = Modifier.fillMaxWidth().background(color = Color.Transparent).padding(start = 16.dp, end = 16.dp, top = 8.dp), onValueChange = { text -> searchText = text }, weather = {
+                CustomSearchViewRight(placeholder = "Search for your task", search = searchText, modifier = Modifier.fillMaxWidth().background(color = Color.Transparent).padding(start = 16.dp, end = 16.dp, top = 8.dp), onValueChange = { text -> searchText = text }, weather = {
                     // Update local weather list
-                    scope.launch { if (it.main?.temp!! > 0) localWeatherList = completedScreenViewModel.getListOfTasks(status = 0) as ArrayList }
+                    scope.launch { if (it.main?.temp!! > 0) taskList = completedScreenViewModel.getListOfTasks(status = 1) as ArrayList }
                 })
-                if(localWeatherList.isNotEmpty())
-                    LazyColumn(modifier = Modifier.fillMaxWidth().padding(start = 30.dp, end = 30.dp, top = 4.dp, bottom = 8.dp).background(color = MaterialTheme.colors.background), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(localWeatherList.size) { i ->
-                            Card(modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 2.dp), backgroundColor = Color.LightGray, border = BorderStroke(1.dp, MaterialTheme.colors.surface)){
-                                Box(modifier = Modifier.fillMaxSize().padding(end = 8.dp, start = 10.dp)){
-                                    Column(modifier = Modifier.align(Alignment.CenterStart).padding(8.dp)){
-//                                        Text(style = MaterialTheme.typography.h2, textAlign = TextAlign.Center, text = localWeatherList[i].city)
-//                                        Image(painter = painterResource(id = getWeatherIcon(localWeatherList[i].icon)), contentDescription = null)
-                                    }
-//                                    Text(style = MaterialTheme.typography.h1, modifier = Modifier.align(Alignment.BottomEnd).padding(8.dp), textAlign = TextAlign.Start, text = "${"%.0f".format(convertTemperature(localWeatherList[i].temp))}\u00B0")
-                                }
-                            }
-                        }
+                Spacer(modifier = Modifier.height(26.dp))
+                TaskList(
+                    home = false,
+                    taskList,
+                    onEditTask = { task ->
+                        selectedTask = task
+                        showEditDialog = true
+                    },
+                    onDeleteTask = { task ->
+                        selectedTask = task
+                        showDeleteDialog = true
                     }
+                )
             }
+        }
+
+        // Edit Task Dialog
+        if (showEditDialog && selectedTask != null) {
+            EditTaskDialog(
+                task = selectedTask!!,
+                onDismiss = { showEditDialog = false },
+                onTaskUpdated = { updatedTask ->
+                    scope.launch {
+                        completedScreenViewModel.updateTask(updatedTask)
+                        taskList = completedScreenViewModel.getListOfTasks(status = 1) as ArrayList
+                    }
+                }
+            )
+        }
+
+        // Delete Confirmation Dialog
+        if (showDeleteDialog && selectedTask != null) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                title = { androidx.compose.material3.Text("Delete Task") },
+                text = { androidx.compose.material3.Text("Are you sure you want to delete this task?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                completedScreenViewModel.deleteTask(selectedTask!!.recordId)
+                                taskList = completedScreenViewModel.getListOfTasks(status = 1) as ArrayList
+                            }
+                            showDeleteDialog = false
+                        }
+                    ) {
+                        androidx.compose.material3.Text("Delete")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(onClick = { showDeleteDialog = false }) {
+                        androidx.compose.material3.Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
